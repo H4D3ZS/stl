@@ -1,12 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useRef, memo } from 'react';
 
 interface HeaderProps {
     onUpload: (file: File) => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onUpload }) => {
+const Header: React.FC<HeaderProps> = memo(({ onUpload }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    console.log("Header rendering");
 
     return (
         <header className="header glass-panel">
@@ -27,6 +26,6 @@ const Header: React.FC<HeaderProps> = ({ onUpload }) => {
             </div>
         </header>
     );
-};
+});
 
 export default Header;

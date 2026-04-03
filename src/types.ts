@@ -9,4 +9,12 @@ export interface ViewerState {
     lightIntensity: number;
     bgStart: string;
     bgEnd: string;
+    showGrid: boolean;
+    unit: 'mm' | 'cm' | 'in';
+}
+
+export interface ModelDimensions {
+    width: number;
+    height: number;
+    depth: number;
 }

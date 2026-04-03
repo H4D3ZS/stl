@@ -1,17 +1,18 @@
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Stage, Center } from '@react-three/drei';
-import type { ViewerState } from '../types';
+import { OrbitControls, Stage, Grid } from '@react-three/drei';
+import type { ViewerState, ModelDimensions } from '../types';
 import Model from './Model';
 
 interface ThreeViewerProps {
     file: File | null;
     state: ViewerState;
     onLoadChange: (loading: boolean) => void;
+    onDimensionsChange: (dims: ModelDimensions | null) => void;
     canvasRef: React.RefObject<HTMLCanvasElement | null>;
 }
 
-const ThreeViewer: React.FC<ThreeViewerProps> = ({ file, state, onLoadChange, canvasRef }) => {
+const ThreeViewer: React.FC<ThreeViewerProps> = ({ file, state, onLoadChange, onDimensionsChange, canvasRef }) => {
     return (
         <Canvas
             ref={canvasRef as any}
@@ -36,8 +37,24 @@ const ThreeViewer: React.FC<ThreeViewerProps> = ({ file, state, onLoadChange, ca
                         file={file}
                         state={state}
                         onLoadChange={onLoadChange}
+                        onDimensionsChange={onDimensionsChange}
                     />
                 </Stage>
+
+                {state.showGrid && (
+                    <Grid
+                        infiniteGrid
+                        fadeDistance={50}
+                        fadeStrength={5}
+                        cellSize={1}
+                        sectionSize={5}
+                        sectionColor="#3b82f6"
+                        sectionThickness={1.5}
+                        cellColor="#64748b"
+                        cellThickness={0.5}
+                        position={[0, -0.01, 0]}
+                    />
+                )}
 
                 <OrbitControls
                     enableDamping

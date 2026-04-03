@@ -231,3 +231,19 @@ select {
     transform: rotate(360deg);
   }
 }
+.dimensions-hud {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  margin-bottom: 20px;
+}
+
+.dim-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: var(--primary);
+  margin-top: 8px;
+}

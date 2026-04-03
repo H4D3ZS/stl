@@ -1,22 +1,65 @@
-import React from 'react';
-import type { ViewerState } from '../types';
+import React, { useMemo } from 'react';
+import type { ViewerState, ModelDimensions } from '../types';
 
 interface SidebarProps {
     state: ViewerState;
     setState: React.Dispatch<React.SetStateAction<ViewerState>>;
     onClear: () => void;
     onSave: () => void;
+    dimensions: ModelDimensions | null;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ state, setState, onClear, onSave }) => {
+const Sidebar: React.FC<SidebarProps> = ({ state, setState, onClear, onSave, dimensions }) => {
     const updateState = <K extends keyof ViewerState>(key: K, value: ViewerState[K]) => {
         setState(prev => ({ ...prev, [key]: value }));
     };
 
+    const formattedDimensions = useMemo(() => {
+        if (!dimensions) return null;
+        const factor = state.unit === 'mm' ? 1 : state.unit === 'cm' ? 0.1 : 0.0393701;
+        const unitLabel = state.unit;
+        return {
+            x: (dimensions.width * factor).toFixed(2),
+            y: (dimensions.height * factor).toFixed(2),
+            z: (dimensions.depth * factor).toFixed(2),
+            label: unitLabel
+        };
+    }, [dimensions, state.unit]);
+
     return (
         <aside className="sidebar glass-panel">
+            {formattedDimensions && (
+                <div className="section dimensions-hud">
+                    <h3>Dimensions ({formattedDimensions.label})</h3>
+                    <div className="dim-row">
+                        <span>X: {formattedDimensions.x}</span>
+                        <span>Y: {formattedDimensions.y}</span>
+                        <span>Z: {formattedDimensions.z}</span>
+                    </div>
+                </div>
+            )}
+
             <div className="section">
                 <h3>View & Material</h3>
+                <div className="control-group">
+                    <label>Units</label>
+                    <select
+                        value={state.unit}
+                        onChange={(e) => updateState('unit', e.target.value as 'mm' | 'cm' | 'in')}
+                    >
+                        <option value="mm">Millimeters (mm)</option>
+                        <option value="cm">Centimeters (cm)</option>
+                        <option value="in">Inches (in)</option>
+                    </select>
+                </div>
+                <div className="control-group-inline">
+                    <label>Show Grid</label>
+                    <input
+                        type="checkbox"
+                        checked={state.showGrid}
+                        onChange={(e) => updateState('showGrid', e.target.checked)}
+                    />
+                </div>
                 <div className="control-group">
                     <label>Color</label>
                     <input
@@ -83,33 +126,13 @@ const Sidebar: React.FC<SidebarProps> = ({ state, setState, onClear, onSave }) =
             </div>
 
             <div className="section">
-                <h3>Lighting & Environment</h3>
+                <h3>Lighting</h3>
                 <div className="control-group">
                     <label>Intensity ({state.lightIntensity})</label>
                     <input
                         type="range" min="0" max="5" step="0.1"
                         value={state.lightIntensity}
                         onChange={(e) => updateState('lightIntensity', parseFloat(e.target.value))}
-                    />
-                </div>
-            </div>
-
-            <div className="section">
-                <h3>Background</h3>
-                <div className="control-group">
-                    <label>Start Color</label>
-                    <input
-                        type="color"
-                        value={state.bgStart}
-                        onChange={(e) => updateState('bgStart', e.target.value)}
-                    />
-                </div>
-                <div className="control-group">
-                    <label>End Color</label>
-                    <input
-                        type="color"
-                        value={state.bgEnd}
-                        onChange={(e) => updateState('bgEnd', e.target.value)}
                     />
                 </div>
             </div>

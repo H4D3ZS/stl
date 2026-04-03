@@ -1,20 +1,23 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { STLLoader } from 'three-stdlib';
 import * as THREE from 'three';
-import type { ViewerState } from '../types';
+import type { ViewerState, ModelDimensions } from '../types';
 
 interface ModelProps {
     file: File | null;
     state: ViewerState;
     onLoadChange: (loading: boolean) => void;
+    onDimensionsChange: (dims: ModelDimensions | null) => void;
 }
 
-const Model: React.FC<ModelProps> = ({ file, state, onLoadChange }) => {
+const Model: React.FC<ModelProps> = ({ file, state, onLoadChange, onDimensionsChange }) => {
     const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
 
     useEffect(() => {
         if (!file) {
             setGeometry(null);
+            // Set default dimensions for the fallback box
+            onDimensionsChange({ width: 2, height: 2, depth: 2 });
             return;
         }
 
@@ -25,8 +28,17 @@ const Model: React.FC<ModelProps> = ({ file, state, onLoadChange }) => {
                 const loader = new STLLoader();
                 const loadedGeom = loader.parse(e.target?.result as ArrayBuffer);
 
-                // Ensure geometry is centered if not using Stage's center
                 loadedGeom.computeBoundingBox();
+                const box = loadedGeom.boundingBox;
+                if (box) {
+                    const dims = new THREE.Vector3();
+                    box.getSize(dims);
+                    onDimensionsChange({
+                        width: dims.x,
+                        height: dims.y,
+                        depth: dims.z
+                    });
+                }
 
                 setGeometry(loadedGeom);
             } catch (err) {
@@ -40,9 +52,8 @@ const Model: React.FC<ModelProps> = ({ file, state, onLoadChange }) => {
             onLoadChange(false);
         };
         reader.readAsArrayBuffer(file);
-    }, [file, onLoadChange]);
+    }, [file, onLoadChange, onDimensionsChange]);
 
-    // Use memo for material to avoid ad-hoc objects in render loop
     const materialProps = useMemo(() => ({
         color: state.color,
         metalness: state.metalness,

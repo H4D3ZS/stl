@@ -3,13 +3,14 @@ import ThreeViewer from './components/ThreeViewer';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Dropzone from './components/Dropzone';
-import type { ViewerState } from './types';
+import type { ViewerState, ModelDimensions } from './types';
 import './App.css';
 
 const App: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [dimensions, setDimensions] = useState<ModelDimensions | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [state, setState] = useState<ViewerState>({
@@ -22,16 +23,21 @@ const App: React.FC = () => {
     zUp: true,
     lightIntensity: 1.5,
     bgStart: '#1a1a2e',
-    bgEnd: '#16213e'
+    bgEnd: '#16213e',
+    showGrid: true,
+    unit: 'mm'
   });
 
-  const handleFileChange = (newFile: File) => {
+  const handleFileChange = React.useCallback((newFile: File) => {
     if (newFile.name.toLowerCase().endsWith('.stl')) {
       setFile(newFile);
     }
-  };
+  }, []);
 
-  const handleClear = () => setFile(null);
+  const handleClear = () => {
+    setFile(null);
+    setDimensions(null);
+  };
 
   const handleSaveRender = () => {
     if (canvasRef.current) {
@@ -68,6 +74,7 @@ const App: React.FC = () => {
         setState={setState}
         onClear={handleClear}
         onSave={handleSaveRender}
+        dimensions={dimensions}
       />
 
       <div className="canvas-container">
@@ -75,6 +82,7 @@ const App: React.FC = () => {
           file={file}
           state={state}
           onLoadChange={setIsLoading}
+          onDimensionsChange={setDimensions}
           canvasRef={canvasRef}
         />
       </div>
